@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { Quote, QuoteStatus } from '@/types/database'
 import { StatusBadge } from '@/components/StatusBadge'
@@ -9,8 +9,8 @@ import { QuoteItemsEditor } from '@/components/QuoteItemsEditor'
 import { MessageThread } from '@/components/MessageThread'
 import { QuoteActions } from '@/components/QuoteActions'
 
-async function getQuote(id: string) {
-  const supabase = await createClient()
+async function getQuote(id: string, useServiceRole = false) {
+  const supabase = useServiceRole ? createServiceClient() : await createClient()
   const { data } = await supabase
     .from('quotes')
     .select(`
@@ -25,29 +25,34 @@ async function getQuote(id: string) {
   return data as Quote | null
 }
 
-async function getSalesReps() {
-  const supabase = await createClient()
+async function getSalesReps(useServiceRole = false) {
+  const supabase = useServiceRole ? createServiceClient() : await createClient()
   const { data } = await supabase.from('profiles').select('id, full_name').eq('role', 'sales_rep')
   return data || []
 }
 
-async function getCurrentUser() {
+async function getCurrentUserProfile() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
-  const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single()
-  return profile
+  const serviceSupabase = createServiceClient()
+  const { data: profile } = await serviceSupabase.from('profiles').select('*').eq('id', user.id).single()
+  return { user, profile }
 }
 
 export default async function QuoteDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const [quote, salesReps, currentUser] = await Promise.all([
-    getQuote(id),
-    getSalesReps(),
-    getCurrentUser(),
+  const userProfile = await getCurrentUserProfile()
+  const isAdmin = userProfile?.profile?.role === 'admin'
+
+  const [quote, salesReps] = await Promise.all([
+    getQuote(id, isAdmin),
+    getSalesReps(isAdmin),
   ])
 
   if (!quote) notFound()
+
+  const currentUser = userProfile?.profile
 
   const customer = quote.customer as Record<string, string> | undefined
   const salesRep = quote.sales_rep as Record<string, string> | undefined
