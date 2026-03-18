@@ -109,13 +109,17 @@ create trigger quotes_updated_at
 
 -- Auto-create profile on signup
 create or replace function handle_new_user()
-returns trigger as $$
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
 begin
-  insert into profiles (id, email, full_name)
+  insert into public.profiles (id, email, full_name)
   values (new.id, new.email, new.raw_user_meta_data->>'full_name');
   return new;
 end;
-$$ language plpgsql security definer;
+$$;
 
 create trigger on_auth_user_created
   after insert on auth.users
@@ -131,6 +135,7 @@ alter table products enable row level security;
 -- Profiles
 create policy "users can view own profile" on profiles for select using (auth.uid() = id);
 create policy "users can update own profile" on profiles for update using (auth.uid() = id);
+create policy "users can insert own profile" on profiles for insert with check (auth.uid() = id);
 create policy "admins view all profiles" on profiles for select using (
   auth.uid() in (select id from profiles where role = 'admin')
 );

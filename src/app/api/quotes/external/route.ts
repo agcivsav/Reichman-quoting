@@ -108,8 +108,17 @@ export async function POST(request: NextRequest) {
       quote_number: quote.quote_number,
     })
   } catch (error) {
-    console.error('External quote API error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    const message = error instanceof Error ? error.message : 'Unknown error'
+    const details = error instanceof Error ? error.stack : String(error)
+    console.error('External quote API error:', message, details)
+    const isDev = process.env.NODE_ENV === 'development'
+    return NextResponse.json(
+      {
+        error: 'Internal server error',
+        ...(isDev && { details: message }),
+      },
+      { status: 500 }
+    )
   }
 }
 
