@@ -1,28 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+This is a Next.js 16 project for the Reichman quoting and account signup flow.
 
 ## Getting Started
 
-First, run the development server:
+Install dependencies, then run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Create a local env file from `.env.example` and provide your Supabase values.
 
-## Learn More
+Drizzle looks for one of these variables when running migration commands:
 
-To learn more about Next.js, take a look at the following resources:
+- `DATABASE_URL`
+- `SUPABASE_DB_URL`
+- `SUPABASE_DATABASE_URL`
+
+## Database Structure
+
+The database foundation now lives under `db/`:
+
+```text
+db/
+  migrations/
+  schema/
+    account-signups.ts
+    index.ts
+drizzle.config.ts
+```
+
+The first schema models the current signup flow so we can wire the React Hook Form page into Supabase next.
+
+## Drizzle Commands
+
+```bash
+npm run db:generate
+npm run db:migrate
+npm run db:push
+npm run db:studio
+```
+
+## Next Steps
+
+- Connect the signup submit handler to a server action or route handler.
+- Hash the password before writing to `account_signups.password_hash`.
+- Add the actual Supabase connection layer for app-side reads and writes.
 
 - [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
 - [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.

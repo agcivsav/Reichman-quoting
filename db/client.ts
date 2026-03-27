@@ -1,0 +1,54 @@
+import { existsSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
+import * as schema from "./schema";
+
+const currentDirectory = dirname(fileURLToPath(import.meta.url));
+const projectRoot = resolve(currentDirectory, "..");
+
+const loadEnvFile = (
+  process as NodeJS.Process & {
+    loadEnvFile?: (path: string) => void;
+  }
+).loadEnvFile;
+
+const environment = process.env.NODE_ENV ?? "development";
+
+const envFiles = [
+  ".env",
+  environment === "test" ? null : ".env.local",
+  `.env.${environment}`,
+  `.env.${environment}.local`,
+].filter((value): value is string => Boolean(value));
+
+for (const envFile of envFiles) {
+  const absolutePath = resolve(projectRoot, envFile);
+
+  if (existsSync(absolutePath)) {
+    loadEnvFile?.(absolutePath);
+  }
+}
+
+const connectionString =
+  process.env.DATABASE_URL ??
+  process.env.SUPABASE_DB_URL ??
+  process.env.SUPABASE_DATABASE_URL;
+
+if (!connectionString) {
+  throw new Error(
+    "Missing database connection string. Set DATABASE_URL, SUPABASE_DB_URL, or SUPABASE_DATABASE_URL.",
+  );
+}
+
+export const sql = postgres(connectionString, {
+  max: 1,
+  prepare: false,
+});
+
+export const db = drizzle(sql, { schema });
+
+export async function closeDbConnection() {
+  await sql.end();
+}

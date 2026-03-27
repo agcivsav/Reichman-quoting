@@ -1,65 +1,126 @@
-import Image from "next/image";
+import type { Metadata } from "next";
+import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Dealer Portal",
+  description:
+    "A polished customer portal foundation for Reichman Sales & Service.",
+};
+
+const quickLinks = [
+  {
+    title: "Create an account",
+    description:
+      "Start with a premium registration flow designed for dealers, growers, and financing-ready customers.",
+    href: "/account/sign-up",
+  },
+  {
+    title: "Talk with the team",
+    description:
+      "Need immediate help with products, financing, or portal access? Reach the Reichman team directly.",
+    href: "tel:8154522665",
+  },
+];
+
+const highlights = [
+  "Earthy premium palette that can scale into the full site redesign",
+  "Clear content hierarchy for quoting, account access, and sales support",
+  "Modular card system that can be reused on product, account, and service pages",
+];
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <main className="page-shell grain-overlay flex flex-1 items-center">
+      <section className="mx-auto flex w-full max-w-7xl flex-col gap-12 px-6 py-12 sm:px-8 lg:px-12 lg:py-16">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-brand">
+              Reichman Sales &amp; Service
+            </p>
+            <p className="mt-2 max-w-xl text-sm text-muted">
+              Portal design foundation for customer onboarding, quoting, and
+              account management.
+            </p>
+          </div>
+          <Link
+            href="/account/sign-up"
+            className="rounded-full border border-brand/15 bg-white/70 px-5 py-3 text-sm font-semibold text-brand shadow-[0_12px_30px_rgba(20,50,37,0.08)] backdrop-blur hover:-translate-y-0.5 hover:bg-white"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            View Sign-Up Page
+          </Link>
         </div>
-      </main>
-    </div>
+
+        <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
+          <section className="rounded-[2rem] border border-white/65 bg-[linear-gradient(135deg,rgba(31,75,58,0.96),rgba(20,50,37,0.92))] p-8 text-white shadow-[var(--shadow)] sm:p-10 lg:p-12">
+            <span className="inline-flex rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-white/80">
+              Future-facing visual system
+            </span>
+            <h1 className="mt-8 max-w-2xl font-display text-4xl leading-tight sm:text-5xl lg:text-6xl">
+              A more confident, premium direction for the Reichman customer
+              experience.
+            </h1>
+            <p className="mt-6 max-w-2xl text-base leading-8 text-white/78 sm:text-lg">
+              The new interface balances trust, agricultural grit, and polished
+              service. It is designed to feel client-ready now while giving us a
+              strong visual system we can extend into the rest of the site.
+            </p>
+
+            <div className="mt-10 grid gap-4 sm:grid-cols-3">
+              <div className="rounded-[1.5rem] border border-white/12 bg-white/10 p-5 backdrop-blur">
+                <p className="text-sm uppercase tracking-[0.2em] text-white/60">
+                  Designed for
+                </p>
+                <p className="mt-3 text-xl font-semibold">Growers and dealers</p>
+              </div>
+              <div className="rounded-[1.5rem] border border-white/12 bg-white/10 p-5 backdrop-blur">
+                <p className="text-sm uppercase tracking-[0.2em] text-white/60">
+                  Tone
+                </p>
+                <p className="mt-3 text-xl font-semibold">Warm, strong, clear</p>
+              </div>
+              <div className="rounded-[1.5rem] border border-white/12 bg-white/10 p-5 backdrop-blur">
+                <p className="text-sm uppercase tracking-[0.2em] text-white/60">
+                  Reusable
+                </p>
+                <p className="mt-3 text-xl font-semibold">Cards, inputs, CTAs</p>
+              </div>
+            </div>
+          </section>
+
+          <section className="rounded-[2rem] border border-border bg-white/78 p-8 shadow-[0_24px_60px_rgba(20,50,37,0.08)] backdrop-blur sm:p-10">
+            <p className="text-sm font-semibold uppercase tracking-[0.26em] text-brand">
+              What this gives us
+            </p>
+            <div className="mt-6 space-y-4">
+              {highlights.map((item) => (
+                <div
+                  key={item}
+                  className="rounded-[1.35rem] border border-border bg-surface px-5 py-4 text-sm leading-7 text-foreground"
+                >
+                  {item}
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-8 space-y-4">
+              {quickLinks.map((link) => (
+                <a
+                  key={link.title}
+                  href={link.href}
+                  className="block rounded-[1.5rem] border border-border bg-white px-5 py-5 shadow-[0_12px_30px_rgba(20,50,37,0.05)] hover:-translate-y-0.5 hover:border-brand/25"
+                >
+                  <p className="text-lg font-semibold text-brand-strong">
+                    {link.title}
+                  </p>
+                  <p className="mt-2 text-sm leading-7 text-muted">
+                    {link.description}
+                  </p>
+                </a>
+              ))}
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
   );
 }
