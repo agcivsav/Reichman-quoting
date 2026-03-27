@@ -1,12 +1,9 @@
 import { existsSync } from "node:fs";
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { resolve } from "node:path";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "./schema";
 
-const currentDirectory = dirname(fileURLToPath(import.meta.url));
-const projectRoot = resolve(currentDirectory, "..");
 
 const loadEnvFile = (
   process as NodeJS.Process & {
@@ -24,7 +21,7 @@ const envFiles = [
 ].filter((value): value is string => Boolean(value));
 
 for (const envFile of envFiles) {
-  const absolutePath = resolve(projectRoot, envFile);
+  const absolutePath = resolve(/* turbopackIgnore: true */ process.cwd(), envFile);
 
   if (existsSync(absolutePath)) {
     loadEnvFile?.(absolutePath);
@@ -52,3 +49,5 @@ export const db = drizzle(sql, { schema });
 export async function closeDbConnection() {
   await sql.end();
 }
+
+

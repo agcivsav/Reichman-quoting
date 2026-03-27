@@ -12,7 +12,7 @@ export const licenses = pgTable('licenses', {
                    .references(() => licenseTypes.id),
   licenseNumber: text('license_number').notNull(),
   expiresAt:     timestamp('expires_at').notNull(),
-  state:         text('state').notNull(),              // ISO 3166-2 alpha-2 e.g. 'US-CA', 'PK-PB'
+  state:         text('state').notNull(),              // ISO2 state code e.g. 'CA', 'TX'
 
   createdAt:     timestamp('created_at').defaultNow(),
   updatedAt:     timestamp('updated_at').defaultNow(),

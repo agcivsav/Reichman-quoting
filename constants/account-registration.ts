@@ -1,0 +1,27 @@
+import type { SignUpFormValues } from "@/types/account-registration";
+
+export const defaultSignUpFormValues: SignUpFormValues = {
+  billingAddressLine1: "",
+  billingAddressLine2: "",
+  billingCity: "",
+  billingState: "",
+  billingZipCode: "",
+  companyOrFarmName: "",
+  confirmPassword: "",
+  email: "",
+  firstName: "",
+  lastName: "",
+  licenseExpirationDate: "",
+  licenseNumber: "",
+  licenseState: "",
+  mainPhone: "",
+  password: "",
+  registrationType: "",
+  secondaryPhone: "",
+  shippingAddressLine1: "",
+  shippingAddressLine2: "",
+  shippingCity: "",
+  shippingSameAsBilling: false,
+  shippingState: "",
+  shippingZipCode: "",
+};

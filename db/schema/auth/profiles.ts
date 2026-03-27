@@ -8,6 +8,8 @@ export const profiles = pgTable("profiles", {
   lastName: text("last_name").notNull(),
   phone: text("phone"),
   companyName: text("company_name"),
+  secondaryPhone: text("secondary_phone"),
+  sameAsBilling: boolean('same_as_billing').default(false),
   isOnboarded: boolean("is_onboarded").default(false),
   roleUpdatedAt: timestamp("role_updated_at"),
   roleUpdatedBy: uuid("role_updated_by"),
