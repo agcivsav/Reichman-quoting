@@ -7,51 +7,51 @@ import {
   readAccountPreview,
   writeAccountPreview,
 } from "@/utils/account-auth/account-preview";
-import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import type { AccountRole } from "@/utils/account-auth/account-role";
+import { getHomePathForRole } from "@/utils/account-auth/account-role";
+import { loadAuthenticatedAccount } from "@/utils/account-auth/load-authenticated-account";
 
-type AccountState = {
-  email: string;
-  name: string;
+type UseRequiredAccountSessionOptions = {
+  allowedRoles: readonly AccountRole[];
 };
 
-export function useRequiredAccountSession() {
+export function useRequiredAccountSession({
+  allowedRoles,
+}: UseRequiredAccountSessionOptions) {
   const router = useRouter();
-  const [account, setAccount] = useState<AccountState | null>(() => readAccountPreview());
+  const allowedRolesKey = allowedRoles.join("|");
+  const [account, setAccount] = useState(() => {
+    const preview = readAccountPreview();
+    return preview && allowedRoles.includes(preview.role) ? preview : null;
+  });
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isCheckingSession, setIsCheckingSession] = useState(() => !readAccountPreview());
+  const [isCheckingSession, setIsCheckingSession] = useState(() => {
+    const preview = readAccountPreview();
+    return !preview || !allowedRoles.includes(preview.role);
+  });
 
   useEffect(() => {
     let isMounted = true;
 
     const loadSession = async () => {
       try {
-        const supabase = createBrowserSupabaseClient();
-        const { data } = await supabase.auth.getSession();
-        const user = data.session?.user;
+        const nextAccount = await loadAuthenticatedAccount();
 
         if (!isMounted) {
           return;
         }
 
-        if (!user) {
+        if (!nextAccount) {
           clearAccountPreview();
           router.replace("/account/login");
           return;
         }
 
-        const firstName =
-          typeof user.user_metadata?.first_name === "string"
-            ? user.user_metadata.first_name
-            : "";
-        const lastName =
-          typeof user.user_metadata?.last_name === "string"
-            ? user.user_metadata.last_name
-            : "";
-
-        const nextAccount = {
-          email: user.email ?? "",
-          name: `${firstName} ${lastName}`.trim(),
-        };
+        if (!allowedRoles.includes(nextAccount.role)) {
+          writeAccountPreview(nextAccount);
+          router.replace(getHomePathForRole(nextAccount.role));
+          return;
+        }
 
         writeAccountPreview(nextAccount);
         setAccount(nextAccount);
@@ -76,7 +76,7 @@ export function useRequiredAccountSession() {
     return () => {
       isMounted = false;
     };
-  }, [router]);
+  }, [allowedRolesKey, allowedRoles, router]);
 
   return {
     account,

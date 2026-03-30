@@ -1,18 +1,52 @@
 "use client";
 
+import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import type { LoginFormValues } from "@/types/account-login";
-import { writeAccountPreview } from "@/utils/account-auth/account-preview";
+import {
+  readAccountRoleHint,
+  writeAccountPreview,
+} from "@/utils/account-auth/account-preview";
+import {
+  getHomePathForRole,
+  isAccountRole,
+} from "@/utils/account-auth/account-role";
+import { loadAuthenticatedAccount } from "@/utils/account-auth/load-authenticated-account";
 import { useAuthenticatedAccountRedirect } from "@/utils/account-auth/use-authenticated-account-redirect";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const inputClassName =
   "mt-2.5 w-full rounded-2xl border border-border bg-white px-4 py-3.5 text-sm text-foreground shadow-[0_1px_0_rgba(255,255,255,0.8),0_10px_25px_rgba(20,50,37,0.03)] placeholder:text-muted/70 focus:border-brand/30 focus:shadow-[0_0_0_4px_rgba(197,145,70,0.12)] focus:outline-none";
+
+function getAccountName(user: User | null | undefined) {
+  const firstName =
+    typeof user?.user_metadata?.first_name === "string" ? user.user_metadata.first_name : "";
+  const lastName =
+    typeof user?.user_metadata?.last_name === "string" ? user.user_metadata.last_name : "";
+
+  return `${firstName} ${lastName}`.trim();
+}
+
+function getOptimisticAccount(user: User | null | undefined, fallbackEmail: string) {
+  const email = user?.email?.trim().toLowerCase() ?? fallbackEmail;
+  const metadataRole = user?.user_metadata?.role ?? user?.app_metadata?.role;
+  const role = isAccountRole(metadataRole) ? metadataRole : readAccountRoleHint(email);
+
+  if (!role) {
+    return null;
+  }
+
+  return {
+    email,
+    name: getAccountName(user),
+    role,
+  };
+}
 
 export default function LoginForm() {
   const router = useRouter();
@@ -30,13 +64,30 @@ export default function LoginForm() {
   });
   const [submissionMessage, setSubmissionMessage] = useState<string | null>(null);
 
+  useEffect(() => {
+    router.prefetch("/account");
+    router.prefetch("/dashboard");
+  }, [router]);
+
+  const syncAuthenticatedAccount = async () => {
+    const account = await loadAuthenticatedAccount();
+
+    if (!account) {
+      return;
+    }
+
+    writeAccountPreview(account);
+    router.replace(getHomePathForRole(account.role));
+  };
+
   const onValidSubmit = async (values: LoginFormValues) => {
     setSubmissionMessage(null);
 
     try {
       const supabase = createBrowserSupabaseClient();
+      const normalizedEmail = values.email.trim().toLowerCase();
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: values.email.trim().toLowerCase(),
+        email: normalizedEmail,
         password: values.password,
       });
 
@@ -47,19 +98,26 @@ export default function LoginForm() {
         return;
       }
 
-      const firstName =
-        typeof data.user?.user_metadata?.first_name === "string"
-          ? data.user.user_metadata.first_name
-          : "";
-      const lastName =
-        typeof data.user?.user_metadata?.last_name === "string"
-          ? data.user.user_metadata.last_name
-          : "";
+      const optimisticAccount = getOptimisticAccount(data.user, normalizedEmail);
 
-      writeAccountPreview({
-        email: data.user?.email ?? values.email.trim().toLowerCase(),
-        name: `${firstName} ${lastName}`.trim(),
-      });
+      toast.success("Logged in successfully.");
+
+      if (optimisticAccount) {
+        writeAccountPreview(optimisticAccount);
+        router.replace(getHomePathForRole(optimisticAccount.role));
+        void syncAuthenticatedAccount();
+        return;
+      }
+
+      const account = await loadAuthenticatedAccount();
+
+      if (!account) {
+        throw new Error("Unable to load the authenticated account.");
+      }
+
+      writeAccountPreview(account);
+      router.replace(getHomePathForRole(account.role));
+      return;
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unable to sign in.";
       setSubmissionMessage(message);
@@ -67,9 +125,6 @@ export default function LoginForm() {
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
-
-    toast.success("Logged in successfully.");
-    router.replace("/account");
   };
 
   const onInvalidSubmit = () => {

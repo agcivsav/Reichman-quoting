@@ -9,29 +9,38 @@ import { clearAccountPreview } from "@/utils/account-auth/account-preview";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { useRequiredAccountSession } from "@/utils/account-auth/use-required-account-session";
 
+const accountAllowedRoles = ["customer", "sales_representative"] as const;
+
 export default function AccountHome() {
   const router = useRouter();
-  const { account, errorMessage, isCheckingSession } = useRequiredAccountSession();
+  const { account, errorMessage, isCheckingSession } = useRequiredAccountSession({
+    allowedRoles: accountAllowedRoles,
+  });
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const confirmSignOut = async () => {
+    setIsLoggingOut(true);
+
     try {
       const supabase = createBrowserSupabaseClient();
-      const { error } = await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut({ scope: "local" });
 
       if (error) {
-        toast.error(error.message);
-        return;
+        throw new Error(error.message);
       }
     } catch (error) {
+      setIsLoggingOut(false);
       toast.error(error instanceof Error ? error.message : "Unable to log out.");
       return;
     }
 
     clearAccountPreview();
     setIsLogoutDialogOpen(false);
+    setIsLoggingOut(false);
     toast.success("Logged out successfully.");
-    router.push("/account/login");
+    router.replace("/account/login");
+    router.refresh();
   };
 
   if (isCheckingSession) {
@@ -67,8 +76,10 @@ export default function AccountHome() {
       <ConfirmDialog
         cancelLabel="Stay signed in"
         confirmLabel="Log out"
+        confirmPendingLabel="Logging out..."
         description="You will be signed out of your Reichman Sales & Service account and returned to the login page."
         isOpen={isLogoutDialogOpen}
+        isPending={isLoggingOut}
         onCancel={() => setIsLogoutDialogOpen(false)}
         onConfirm={confirmSignOut}
         title="Log out?"

@@ -5,8 +5,10 @@ import type { ReactNode } from "react";
 type ConfirmDialogProps = {
   cancelLabel?: string;
   confirmLabel?: string;
+  confirmPendingLabel?: string;
   description: ReactNode;
   isOpen: boolean;
+  isPending?: boolean;
   onCancel: () => void;
   onConfirm: () => void;
   title: string;
@@ -15,8 +17,10 @@ type ConfirmDialogProps = {
 export function ConfirmDialog({
   cancelLabel = "Cancel",
   confirmLabel = "Confirm",
+  confirmPendingLabel,
   description,
   isOpen,
+  isPending = false,
   onCancel,
   onConfirm,
   title,
@@ -37,17 +41,19 @@ export function ConfirmDialog({
         <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
           <button
             type="button"
+            disabled={isPending}
             onClick={onCancel}
-            className="inline-flex items-center justify-center rounded-full border border-border bg-white px-5 py-3 text-sm font-semibold text-brand-strong hover:border-brand/25"
+            className="inline-flex items-center justify-center rounded-full border border-border bg-white px-5 py-3 text-sm font-semibold text-brand-strong hover:border-brand/25 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {cancelLabel}
           </button>
           <button
             type="button"
+            disabled={isPending}
             onClick={onConfirm}
-            className="inline-flex items-center justify-center rounded-full bg-brand px-5 py-3 text-sm font-semibold text-white hover:bg-brand-strong"
+            className="inline-flex items-center justify-center rounded-full bg-brand px-5 py-3 text-sm font-semibold text-white hover:bg-brand-strong disabled:cursor-not-allowed disabled:opacity-70"
           >
-            {confirmLabel}
+            {isPending ? confirmPendingLabel ?? confirmLabel : confirmLabel}
           </button>
         </div>
       </div>

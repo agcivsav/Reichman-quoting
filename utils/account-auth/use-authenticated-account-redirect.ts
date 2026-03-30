@@ -2,7 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import { writeAccountPreview } from "@/utils/account-auth/account-preview";
+import { getHomePathForRole } from "@/utils/account-auth/account-role";
+import { loadAuthenticatedAccount } from "@/utils/account-auth/load-authenticated-account";
 
 export function useAuthenticatedAccountRedirect() {
   const router = useRouter();
@@ -13,15 +15,15 @@ export function useAuthenticatedAccountRedirect() {
 
     const checkSession = async () => {
       try {
-        const supabase = createBrowserSupabaseClient();
-        const { data } = await supabase.auth.getSession();
+        const account = await loadAuthenticatedAccount();
 
         if (!isMounted) {
           return;
         }
 
-        if (data.session) {
-          router.replace("/account");
+        if (account) {
+          writeAccountPreview(account);
+          router.replace(getHomePathForRole(account.role));
           return;
         }
       } catch {
